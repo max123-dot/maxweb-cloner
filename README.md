@@ -84,6 +84,9 @@ Only clone sites you have the right to copy. The crawler respects `robots.txt`
 by default — keep it on. Clones are for personal study, archiving and
 development; don't republish other people's content.
 
+Deployed instances are protected: private/local addresses (localhost, LAN,
+cloud metadata) are blocked and the API rate-limits clone jobs.
+
 ## License
 
 MIT

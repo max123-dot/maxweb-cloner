@@ -8,10 +8,12 @@
  * polite crawling: robots.txt, retries with backoff
 """
 import base64
+import ipaddress
 import mimetypes
 import os
 import posixpath
 import re
+import socket
 import tempfile
 import threading
 import time
@@ -128,6 +130,50 @@ def optimize_image(filepath):
         pass
 
 
+# --- SSRF guard: never fetch private/internal addresses -------------------
+_dns_guard_cache = {}
+_dns_guard_lock = threading.Lock()
+
+
+def url_is_public(url):
+    """True when *url* points at a public internet address (not localhost/LAN/
+    cloud metadata). DNS failures are left to the fetch itself to report."""
+    try:
+        parsed = urlparse(url)
+        host = parsed.hostname
+        if not host:
+            return False
+    except Exception:
+        return False
+
+    literal = None
+    try:
+        literal = ipaddress.ip_address(host)
+    except ValueError:
+        pass
+    if literal is not None:
+        return bool(literal.is_global)
+
+    with _dns_guard_lock:
+        cached = _dns_guard_cache.get(host)
+    if cached is not None:
+        return cached
+
+    allowed = True
+    try:
+        infos = socket.getaddrinfo(host, None)
+        addrs = {info[4][0] for info in infos}
+        if addrs:
+            allowed = all(ipaddress.ip_address(a).is_global for a in addrs)
+    except Exception:
+        allowed = True  # unresolvable hosts just fail at fetch time
+
+    with _dns_guard_lock:
+        if len(_dns_guard_cache) < 2000:
+            _dns_guard_cache[host] = allowed
+    return allowed
+
+
 def _data_uri(filepath):
     mime, _ = mimetypes.guess_type(filepath)
     mime = mime or 'application/octet-stream'
@@ -200,6 +246,8 @@ class Crawler:
             pass
 
     def _fetch(self, url, timeout=15):
+        if not url_is_public(url):
+            return None
         for attempt in range(FETCH_RETRIES + 1):
             try:
                 resp = self.session.get(url, timeout=timeout)
@@ -751,6 +799,13 @@ def clone_website(start_url, max_depth=1, max_pages=DEFAULT_MAX_PAGES,
                   progress_cb=None, respect_robots=True, render='auto', page_delay=0.0,
                   verbose=True):
     """Clone a website. Returns a result dict (zip path, dir, score, stats...)."""
+    if not start_url.startswith('http'):
+        start_url = 'https://' + start_url
+    if not url_is_public(start_url):
+        raise RuntimeError(
+            "Blocked: that address points to a private/local network "
+            "(only public websites can be cloned)."
+        )
     crawler = Crawler(start_url, max_depth=max_depth, max_pages=max_pages,
                       progress_cb=progress_cb, respect_robots=respect_robots,
                       render=render, page_delay=page_delay, verbose=verbose)

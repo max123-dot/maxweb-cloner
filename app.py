@@ -1,5 +1,7 @@
 import os
 import tempfile
+import threading
+import time
 
 import requests as req_lib
 from flask import (Flask, Response, jsonify, render_template, request, send_file,
@@ -12,6 +14,33 @@ app = Flask(__name__)
 
 # preview_id -> {dir, origin}
 active_previews = {}
+
+# ---- simple per-IP rate limit for clone jobs (20/minute) ------------------
+RATE_WINDOW = 60
+RATE_LIMIT = 20
+_rate_lock = threading.Lock()
+_rate_hits = {}
+
+
+def rate_limited(client_ip):
+    now = time.time()
+    with _rate_lock:
+        hits = [t for t in _rate_hits.get(client_ip, []) if now - t < RATE_WINDOW]
+        if len(hits) >= RATE_LIMIT:
+            _rate_hits[client_ip] = hits
+            return True
+        hits.append(now)
+        _rate_hits[client_ip] = hits
+        if len(_rate_hits) > 5000:  # keep the table small
+            _rate_hits.clear()
+        return False
+
+
+def client_ip():
+    forwarded = request.headers.get('X-Forwarded-For', '')
+    if forwarded:
+        return forwarded.split(',')[0].strip()
+    return request.remote_addr or 'unknown'
 
 
 def public_job(job):
@@ -47,6 +76,9 @@ def clone_api():
         return jsonify({'error': 'URL is required'}), 400
     if not url.startswith('http://') and not url.startswith('https://'):
         url = 'https://' + url
+
+    if rate_limited(client_ip()):
+        return jsonify({'error': 'Rate limit reached — try again in a minute.'}), 429
 
     try:
         depth = max(1, min(10, int(data.get('depth', 1) or 1)))
