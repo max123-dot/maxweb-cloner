@@ -24,7 +24,7 @@ sleek OpenCode-style terminal UI, or plain CLI.**
 ## 🚀 Quick start
 
 ```bash
-git clone https://github.com/Codewithmax/maxweb-cloner.git
+git clone https://github.com/max123-dot/maxweb-cloner.git
 cd maxweb-cloner
 python3 -m venv venv
 venv/bin/pip install -r requirements.txt
