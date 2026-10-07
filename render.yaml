@@ -1,0 +1,14 @@
+# Render.com free-tier deployment config
+# Connect this repo at https://dashboard.render.com → "New +" → "Web Service"
+services:
+  - type: web
+    name: maxweb-cloner
+    runtime: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app --workers 2 --threads 4 --bind 0.0.0.0:$PORT
+    envVars:
+      - key: CLONER_DEBUG
+        value: "0"
+      - key: CLONER_RELOAD
+        value: "0"
+    healthCheckPath: /

@@ -1,0 +1,22 @@
+# dependencies & caches
+venv/
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+
+# runtime artifacts
+cloner.log
+cloner.pid
+*.zip
+
+# cloned site output (created in cwd by CLI/TUI)
+example.com/
+www.*/
+localhost*/
+
+# env & editor
+.env
+.DS_Store
+.idea/
+.vscode/

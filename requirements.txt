@@ -1,0 +1,10 @@
+Flask==3.0.0
+requests==2.31.0
+beautifulsoup4==4.12.2
+selenium>=4.20
+playwright
+Pillow
+minify-html
+rcssmin==1.1.2
+rjsmin==1.2.2
+gunicorn

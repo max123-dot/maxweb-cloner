@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Clone any website and download its HTML, CSS, and Images instantly.">
+    <title>Website Cloner | AI Powered</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="background-animation">
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
+        <div class="blob blob-3"></div>
+    </div>
+
+    <div class="container">
+        <header>
+            <h1>Web<span class="highlight">Cloner</span></h1>
+            <p>Enter any URL below to instantly clone its source code, stylesheets, images, fonts and links into a downloadable archive.</p>
+        </header>
+
+        <main>
+            <div class="glass-panel">
+                <form id="clone-form">
+                    <div class="input-group">
+                        <input type="url" id="url-input" placeholder="https://example.com" required autocomplete="off">
+                        <button type="submit" id="submit-btn">
+                            <span class="btn-text">Clone Site</span>
+                            <div class="spinner hidden"></div>
+                        </button>
+                    </div>
+
+                    <div class="options-group">
+                        <label for="depth-input">Crawl Depth: <span id="depth-val">1</span></label>
+                        <input type="range" id="depth-input" min="1" max="5" value="1">
+                        <label for="max-pages-input">Max pages:</label>
+                        <input type="number" id="max-pages-input" min="1" max="500" value="25">
+                    </div>
+
+                    <div class="options-group checks">
+                        <label class="check" title="Uses a real browser for React/Next/Vue sites">
+                            <input type="checkbox" id="render-input"> Render JavaScript (React/Next sites)
+                        </label>
+                        <label class="check" title="Only crawl what the site's robots.txt allows">
+                            <input type="checkbox" id="robots-input" checked> Respect robots.txt
+                        </label>
+                    </div>
+                </form>
+
+                <div id="progress-section" class="hidden">
+                    <div class="progress-phase" id="progress-phase">Starting…</div>
+                    <div class="progress-bar"><div id="progress-fill"></div></div>
+                    <div class="progress-stats" id="progress-stats"></div>
+                    <div class="progress-current" id="progress-current"></div>
+                </div>
+
+                <div id="status-message" class="hidden">
+                    <p class="status-text"></p>
+                </div>
+
+                <div id="score-section" class="hidden">
+                    <span id="score-badge" class="score-badge"></span>
+                    <span id="missing-note" class="missing-note"></span>
+                </div>
+
+                <div id="preview-section" class="hidden">
+                    <div class="preview-header">
+                        <h3>Live Preview</h3>
+                        <span class="preview-note">strict offline mode — exactly what the ZIP contains</span>
+                    </div>
+                    <iframe id="preview-frame" src="" sandbox="allow-same-origin allow-scripts"></iframe>
+                </div>
+
+                <div id="download-section" class="hidden">
+                    <p>Success! Your clone is ready.</p>
+                    <div class="btn-row">
+                        <a href="#" id="download-btn" class="action-btn">Download .ZIP Archive</a>
+                        <a href="#" id="single-btn" class="action-btn secondary">Download single-file HTML</a>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <footer>
+            <p>&copy; 2026 Website Cloner Tool. Developed with Python &amp; Flask.</p>
+        </footer>
+    </div>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
